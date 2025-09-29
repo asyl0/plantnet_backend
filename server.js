@@ -94,6 +94,8 @@ app.post('/identify', upload.single('image'), async (req, res) => {
     });
     formData.append('organs', 'auto');
     formData.append('modifiers', 'crops-simple,similar_images,plant_net,plant_net_detailed');
+    formData.append('no-reject', 'true'); // Разрешаем предсказания даже для нерастительных изображений
+    formData.append('plant-details', 'common_names,url,description,image');
     
     console.log('Отправляем упрощенный запрос к PlantNet API');
 
