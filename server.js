@@ -128,8 +128,17 @@ app.post('/identify', upload.single('image'), async (req, res) => {
     formData.append('modifiers', 'crops-simple,similar_images,plant_net,plant_net_detailed');
     formData.append('no-reject', 'true'); // Разрешаем предсказания даже для нерастительных изображений
     formData.append('plant-details', 'common_names,url,description,image');
+    formData.append('plant-language', 'ru'); // Язык для названий растений
     
-    console.log('Отправляем упрощенный запрос к PlantNet API');
+    console.log('Отправляем запрос к PlantNet API с параметрами:', {
+      organs: 'auto',
+      modifiers: 'crops-simple,similar_images,plant_net,plant_net_detailed',
+      noReject: 'true',
+      plantDetails: 'common_names,url,description,image',
+      plantLanguage: 'ru',
+      contentType: contentType,
+      fileSize: req.file.size
+    });
 
     // Отправляем запрос к PlantNet API
     const response = await axios.post(PLANTNET_API_URL, formData, {
