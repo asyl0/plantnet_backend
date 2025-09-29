@@ -21,9 +21,18 @@ const upload = multer({
     fileSize: 10 * 1024 * 1024, // 10MB максимум
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
+    console.log('Проверяем файл:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      fieldname: file.fieldname
+    });
+    
+    // Разрешаем все типы изображений
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
+      console.log('Файл принят:', file.mimetype);
       cb(null, true);
     } else {
+      console.log('Файл отклонен:', file.mimetype);
       cb(new Error('Только изображения разрешены'), false);
     }
   }
@@ -41,6 +50,15 @@ app.post('/identify', upload.single('image'), async (req, res) => {
     console.log('Headers:', req.headers);
     console.log('Body:', req.body);
     console.log('File:', req.file ? 'Файл получен' : 'Файл НЕ получен');
+    
+    if (req.file) {
+      console.log('Детали файла:', {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        fieldname: req.file.fieldname
+      });
+    }
     
     // Проверяем наличие файла
     if (!req.file) {
