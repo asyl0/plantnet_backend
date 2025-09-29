@@ -35,7 +35,11 @@ const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
 // Эндпоинт для распознавания растений
 app.post('/identify', upload.single('image'), async (req, res) => {
   try {
+    console.log('=== НАЧАЛО ОБРАБОТКИ ЗАПРОСА /identify ===');
     console.log('Получен запрос на распознавание растения');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    console.log('File:', req.file ? 'Файл получен' : 'Файл НЕ получен');
     
     // Проверяем наличие файла
     if (!req.file) {
@@ -187,6 +191,19 @@ app.get('/test-api', (req, res) => {
   });
 });
 
+// Тестовый эндпоинт для проверки POST запросов
+app.post('/test-post', (req, res) => {
+  console.log('=== ТЕСТ POST ЗАПРОСА ===');
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  res.json({
+    success: true,
+    message: 'POST запрос получен',
+    headers: req.headers,
+    body: req.body
+  });
+});
+
 // Тестовый эндпоинт для проверки PlantNet API
 app.get('/test-plantnet', async (req, res) => {
   try {
@@ -223,7 +240,12 @@ app.get('/test-plantnet', async (req, res) => {
 
 // Обработка ошибок multer
 app.use((error, req, res, next) => {
+  console.log('=== ОШИБКА MULTER ===');
+  console.log('Error:', error);
+  console.log('Error type:', error.constructor.name);
+  
   if (error instanceof multer.MulterError) {
+    console.log('Multer error code:', error.code);
     if (error.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
@@ -232,6 +254,7 @@ app.use((error, req, res, next) => {
     }
   }
   
+  console.log('Общая ошибка:', error.message);
   res.status(500).json({
     success: false,
     error: error.message || 'Внутренняя ошибка сервера'
