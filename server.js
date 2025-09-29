@@ -35,26 +35,38 @@ const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY;
 // Эндпоинт для распознавания растений
 app.post('/identify', upload.single('image'), async (req, res) => {
   try {
+    console.log('Получен запрос на распознавание растения');
+    
     // Проверяем наличие файла
     if (!req.file) {
+      console.log('Ошибка: файл не найден');
       return res.status(400).json({
         success: false,
         error: 'Изображение не найдено'
       });
     }
 
+    console.log('Файл получен:', {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
+
     // Проверяем API ключ
     if (!PLANTNET_API_KEY) {
+      console.log('Ошибка: API ключ не настроен');
       return res.status(500).json({
         success: false,
         error: 'PlantNet API ключ не настроен'
       });
     }
 
+    console.log('API ключ найден, отправляем запрос к PlantNet...');
+
     // Подготавливаем данные для PlantNet API
     const formData = new FormData();
     formData.append('images', req.file.buffer, {
-      filename: req.file.originalname,
+      filename: req.file.originalname || 'plant_image.jpg',
       contentType: req.file.mimetype
     });
     formData.append('organs', 'auto');
@@ -69,6 +81,12 @@ app.post('/identify', upload.single('image'), async (req, res) => {
         ...formData.getHeaders()
       },
       timeout: 30000 // 30 секунд таймаут
+    });
+
+    console.log('Ответ от PlantNet API:', {
+      status: response.status,
+      dataKeys: Object.keys(response.data || {}),
+      resultsCount: response.data?.results?.length || 0
     });
 
     // Обрабатываем ответ
@@ -127,7 +145,17 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'OK',
     message: 'Сервер работает',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    hasApiKey: !!PLANTNET_API_KEY
+  });
+});
+
+// Тестовый эндпоинт для проверки API ключа
+app.get('/test-api', (req, res) => {
+  res.json({
+    hasApiKey: !!PLANTNET_API_KEY,
+    apiKeyLength: PLANTNET_API_KEY ? PLANTNET_API_KEY.length : 0,
+    apiKeyPrefix: PLANTNET_API_KEY ? PLANTNET_API_KEY.substring(0, 8) + '...' : 'Нет ключа'
   });
 });
 
