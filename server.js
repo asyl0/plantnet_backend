@@ -63,7 +63,7 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
     console.log('API ключ найден, отправляем запрос к PlantNet...');
 
-    // Подготавливаем данные для PlantNet API
+    // Подготавливаем данные для PlantNet API (упрощенная версия)
     const formData = new FormData();
     formData.append('images', req.file.buffer, {
       filename: req.file.originalname || 'plant_image.jpg',
@@ -71,8 +71,8 @@ app.post('/identify', upload.single('image'), async (req, res) => {
     });
     formData.append('organs', 'auto');
     formData.append('modifiers', 'crops-simple,similar_images,plant_net,plant_net_detailed');
-    formData.append('plant-language', 'ru');
-    formData.append('plant-details', 'common_names,url,description,image');
+    
+    console.log('Отправляем упрощенный запрос к PlantNet API');
 
     // Отправляем запрос к PlantNet API
     const response = await axios.post(PLANTNET_API_URL, formData, {
@@ -166,6 +166,38 @@ app.get('/test-api', (req, res) => {
     apiKeyLength: PLANTNET_API_KEY ? PLANTNET_API_KEY.length : 0,
     apiKeyPrefix: PLANTNET_API_KEY ? PLANTNET_API_KEY.substring(0, 8) + '...' : 'Нет ключа'
   });
+});
+
+// Тестовый эндпоинт для проверки PlantNet API
+app.get('/test-plantnet', async (req, res) => {
+  try {
+    console.log('Тестируем подключение к PlantNet API...');
+    
+    // Простой тестовый запрос
+    const response = await axios.get('https://my-api.plantnet.org/v2/projects', {
+      headers: {
+        'Api-Key': PLANTNET_API_KEY
+      },
+      timeout: 10000
+    });
+    
+    res.json({
+      success: true,
+      message: 'PlantNet API доступен',
+      status: response.status,
+      data: response.data
+    });
+  } catch (error) {
+    console.error('Ошибка при тестировании PlantNet API:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      details: error.response ? {
+        status: error.response.status,
+        data: error.response.data
+      } : null
+    });
+  }
 });
 
 // Обработка ошибок multer
