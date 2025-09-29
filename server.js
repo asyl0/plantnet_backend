@@ -122,6 +122,15 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
   } catch (error) {
     console.error('Ошибка при распознавании растения:', error);
+    console.error('Детали ошибки:', {
+      message: error.message,
+      code: error.code,
+      response: error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      } : null
+    });
     
     let errorMessage = 'Произошла ошибка при распознавании растения';
     
