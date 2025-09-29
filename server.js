@@ -192,23 +192,13 @@ app.get('/test-plantnet', async (req, res) => {
   try {
     console.log('Тестируем подключение к PlantNet API...');
     
-    // Тестовый запрос к identify эндпоинту с минимальными данными
-    const testFormData = new FormData();
-    // Создаем тестовое изображение (1x1 пиксель)
-    const testImageBuffer = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-    testFormData.append('images', testImageBuffer, {
-      filename: 'test.jpg',
-      contentType: 'image/jpeg'
-    });
-    testFormData.append('organs', 'auto');
-    
-    const response = await axios.post(PLANTNET_API_URL, testFormData, {
+    // Простой GET запрос для проверки аутентификации
+    const response = await axios.get('https://my-api.plantnet.org/v2/projects', {
       headers: {
         'Authorization': `Bearer ${PLANTNET_API_KEY}`,
-        ...testFormData.getHeaders()
+        'Content-Type': 'application/json'
       },
-      timeout: 15000,
-      maxRedirects: 5
+      timeout: 10000
     });
     
     res.json({
