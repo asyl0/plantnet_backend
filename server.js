@@ -27,9 +27,14 @@ const upload = multer({
       fieldname: file.fieldname
     });
     
-    // Разрешаем все типы изображений
-    if (file.mimetype && file.mimetype.startsWith('image/')) {
-      console.log('Файл принят:', file.mimetype);
+    // Разрешаем изображения и файлы от Flutter (application/octet-stream с расширением изображения)
+    const isImageMime = file.mimetype && file.mimetype.startsWith('image/');
+    const isFlutterImage = file.mimetype === 'application/octet-stream' && 
+      file.originalname && 
+      /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.originalname);
+    
+    if (isImageMime || isFlutterImage) {
+      console.log('Файл принят:', file.mimetype, isFlutterImage ? '(Flutter image)' : '');
       cb(null, true);
     } else {
       console.log('Файл отклонен:', file.mimetype);
@@ -88,9 +93,36 @@ app.post('/identify', upload.single('image'), async (req, res) => {
 
     // Подготавливаем данные для PlantNet API (упрощенная версия)
     const formData = new FormData();
+    
+    // Исправляем MIME тип для Flutter файлов
+    let contentType = req.file.mimetype;
+    if (req.file.mimetype === 'application/octet-stream') {
+      const ext = req.file.originalname.split('.').pop().toLowerCase();
+      switch (ext) {
+        case 'jpg':
+        case 'jpeg':
+          contentType = 'image/jpeg';
+          break;
+        case 'png':
+          contentType = 'image/png';
+          break;
+        case 'gif':
+          contentType = 'image/gif';
+          break;
+        case 'bmp':
+          contentType = 'image/bmp';
+          break;
+        case 'webp':
+          contentType = 'image/webp';
+          break;
+        default:
+          contentType = 'image/jpeg'; // По умолчанию
+      }
+    }
+    
     formData.append('images', req.file.buffer, {
       filename: req.file.originalname || 'plant_image.jpg',
-      contentType: req.file.mimetype
+      contentType: contentType
     });
     formData.append('organs', 'auto');
     formData.append('modifiers', 'crops-simple,similar_images,plant_net,plant_net_detailed');
